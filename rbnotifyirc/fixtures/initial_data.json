@@ -1,0 +1,26 @@
+[
+    {
+        "pk": 1,
+        "model": "rbnotifyirc.notifyhook",
+        "fields": {
+            "hook_id": "review_request_published",
+            "description": "Review Request published"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "rbnotifyirc.notifyhook",
+        "fields": {
+            "hook_id": "review_published",
+            "description": "Review published"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "rbnotifyirc.notifyhook",
+        "fields": {
+            "hook_id": "reply_published",
+            "description": "Reply published"
+        }
+    }
+]
