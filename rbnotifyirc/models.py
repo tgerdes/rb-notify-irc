@@ -1,4 +1,7 @@
 import logging
+import re
+import socket
+
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -25,6 +28,46 @@ class IrcConfiguration(models.Model):
 
     def __unicode__(self):
         return u"{0.nick} on irc://{0.server}:{0.port}/{0.room}".format(self)
+
+
+    def connect(self):
+        # TODO : support SSL
+        self.socket = socket.create_connection((self.server, int(self.port)))
+        self.read = self.socket.makefile('r')
+        self.write = self.socket.makefile('w', bufsize=0)
+        self.write.write('NICK %s\n' % self.nick)
+        self.write.write('USER %s * * :IRC Bot\n' % (self.nick))
+        # Read until connected
+        while True:
+            line = self.read.readline()
+            if re.search('00[1-4] reviewbot', line):
+                break
+
+    def disconnect(self):
+        self.write.write('QUIT\n')
+        while True:
+            line = self.read.readline()
+            if not line: break
+        self.read.close()
+        self.write.close()
+        self.socket.close()
+        del(self.socket)
+        del(self.read)
+        del(self.write)
+
+    def notify(self, message):
+        for room in self.room.split(','):
+            room = room.strip()
+            if room[0] != '#':
+                room = '#' + room
+            self.write.write('NOTICE {room} :{message}\n'.format(
+              room=room, message=message))
+
+    def do_notify(self, message):
+        self.connect()
+        self.notify(message)
+        self.disconnect()
+
 
 class NotifyHookManager(models.Manager):
     def get_by_natural_key(self, hook_id):
