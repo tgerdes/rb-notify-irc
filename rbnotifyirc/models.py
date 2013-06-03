@@ -64,9 +64,15 @@ class IrcConfiguration(models.Model):
               room=room, message=message))
 
     def do_notify(self, message):
-        self.connect()
-        self.notify(message)
-        self.disconnect()
+        try:
+            self.connect()
+            self.notify(message)
+            self.disconnect()
+        except socket.error:
+            # For now just ignore any socket error
+            # most commonly 104, reset by peer.
+            pass
+            
 
 
 class NotifyHookManager(models.Manager):
